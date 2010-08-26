@@ -174,18 +174,14 @@ function emvideo_comedycentral_embedded_link($video_code) {
  */
 function theme_emvideo_comedycentral_flash($item, $width, $height, $autoplay) {
   $output = '';
+
   if ($item['embed']) {
     $autoplay = $autoplay ? 'true' : 'false';
     $fullscreen = variable_get('emvideo_comedycentral_full_screen', 1) ? 'true' : 'false';
-    $output = '<object width="'. $width .'" height="'. $height .'">';
-    $output .= '<param name="movie" value="http://www.comedycentral.com/embed/'. $item['data']['embed'] .'">';
-    $output .= '<param name="quality" value="best" />';
-    $output .= '<param name="wmode" value="transparent" />';
-    $output .= '<param name="allowFullScreen" value="'. $fullscreen .'" />';
-    $output .= '<param name="scale" value="showAll" />';
-    $output .= '<param name="FlashVars" value="autoplay='. $autoplay .'" />';
-    $output .= '<embed src="http://www.comedycentral.com/embed/'. $item['data']['embed'] .'" type="application/x-shockwave-flash" allowFullScreen="'. $fullscreen .'"  width="'. $width .'" height="'. $height .'"></embed>';
-    $output .= '</object>';
+$output = <<<EOD
+<embed src='http://media.mtvnservices.com/{$item['value']}' width='$width' height='$height' allowFullscreen='$fullscreen' flashvars='autoPlay=$autoplay' type='application/x-shockwave-flash' wmode='transparent' allowscriptaccess='always' allownetworking='all'></embed>
+EOD;
+
   }
   return $output;
 }
@@ -201,9 +197,7 @@ function theme_emvideo_comedycentral_flash($item, $width, $height, $autoplay) {
  *    A URL pointing to the thumbnail.
  */
 function emvideo_comedycentral_thumbnail($field, $item, $formatter, $node, $width, $height) {
-  // In this demonstration, we previously retrieved a thumbnail using oEmbed
-  // during the data hook.
-  return $data['thumbnail'];
+  return $item['data']['thumbnail'];
 }
 
 /**
