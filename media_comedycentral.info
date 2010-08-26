@@ -1,0 +1,6 @@
+; $Id$
+name = Media: Comedy Central
+description = Embedded Media Field provider for http://comedycentral.com
+core = 6.x
+dependencies[] = emvideo
+package = Media

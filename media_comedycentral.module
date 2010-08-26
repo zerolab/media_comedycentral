@@ -1,0 +1,13 @@
+<?php
+// $Id$
+
+/**
+ *  @file
+ *  Embedded Video Field provider for comedycentral.com
+ */
+
+function media_comedycentral_emfield_providers($module, $provider = NULL) {
+  if ($module == 'emvideo') {
+    return drupal_system_listing("$provider\.inc$", drupal_get_path('module', 'media_comedycentral') ."/providers", 'name', 0);
+  }
+}
