@@ -1,38 +1,13 @@
 <?php
-// $Id: example.inc.txt,v 1.1.2.2 2009/10/29 13:29:51 aaron Exp $
+// $Id$
 
 /**
  * @file
- *  This is an example provider include file for Embedded Media Video.
- *  Use this as a base for creating new provider files.
- *
- *  When using this, first make the following global replacements:
- *    * Replace EXAMPLE with the name of your provider in all caps.
- *    * Replace example with the name of your provider in all lower case.
- *    * Replace Example with the name (to be translated) of your provider in
- *        uppercase.
- *
- *  You then need to go through each function and modify according to the
- *  requirements of your provider's API.
+ *  This is Ccomedy Central provider include file for Embedded Media Video.
  */
 
-/**
- *  This is the main URL for your provider.
- */
-define('EMVIDEO_EXAMPLE_MAIN_URL', 'http://www.example.com/');
-
-/**
- *  This is the URL to the API of your provider, if this exists.
- */
-define('EMVIDEO_EXAMPLE_API_URL', 'http://www.example.com/api');
-
-/**
- *  This defines the version of the content data array that we serialize
- *  in emvideo_example_data(). If we change the expected keys of that array,
- *  we must increment this value, which will allow older content to be updated
- *  to the new version automatically.
- */
-define('EMVIDEO_EXAMPLE_DATA_VERSION', 1);
+define('EMVIDEO_COMEDYCENTRAL_MAIN_URL', 'http://www.comedycentral.com/');
+define('EMVIDEO_COMEDYCENTRAL_DATA_VERSION', 1);
 
 /**
  * hook emvideo_PROVIDER_info
@@ -53,7 +28,7 @@ define('EMVIDEO_EXAMPLE_DATA_VERSION', 1);
  *      will be Yes or No, and 'Notes' will give an optional description or
  *      caveats to the feature.
  */
-function emvideo_example_info() {
+function emvideo_comedycentral_info() {
   $features = array(
     array(t('Autoplay'), t('Yes'), ''),
     array(t('RSS Attachment'), t('Yes'), ''),
@@ -61,10 +36,10 @@ function emvideo_example_info() {
     array(t('Full screen mode'), t('Yes'), t('You may customize the player to enable or disable full screen playback. Full screen mode is enabled by default.')),
   );
   return array(
-    'provider' => 'example',
-    'name' => t('Example'),
-    'url' => EMVIDEO_EXAMPLE_MAIN_URL,
-    'settings_description' => t('These settings specifically affect videos displayed from !example. You can also read more about its !api.', array('!example' => l(t('Example.com'), EMVIDEO_EXAMPLE_MAIN_URL), '!api' => l(t("developer's API"), EMVIDEO_EXAMPLE_API_URL))),
+    'provider' => 'comedycentral',
+    'name' => t('Comedy Central'),
+    'url' => EMVIDEO_COMEDYCENTRAL_MAIN_URL,
+    'settings_description' => t('These settings specifically affect videos displayed from !comedycentral. You can also read more about its !api.', array('!comedycentral' => l(t('comedycentral.com'), EMVIDEO_COMEDYCENTRAL_MAIN_URL), '!api' => l(t("developer's API"), EMVIDEO_COMEDYCENTRAL_API_URL))),
     'supported_features' => $features,
   );
 }
@@ -74,26 +49,26 @@ function emvideo_example_info() {
  *  This should return a subform to be added to the emvideo_settings() admin
  *  settings page.
  *
- *  Note that a form field set will already be provided at $form['example'],
+ *  Note that a form field set will already be provided at $form['comedycentral'],
  *  so if you want specific provider settings within that field set, you should
  *  add the elements to that form array element.
  */
-function emvideo_example_settings() {
+function emvideo_comedycentral_settings() {
   // We'll add a field set of player options here. You may add other options
   // to this element, or remove the field set entirely if there are no
-  // user-configurable options allowed by the example provider.
-  $form['example']['player_options'] = array(
+  // user-configurable options allowed by the comedycentral provider.
+  $form['comedycentral']['player_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Embedded video player options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   // This is an option to set the video to full screen. You should remove this
-  // option if it is not provided by the example provider.
-  $form['example']['player_options']['emvideo_example_full_screen'] = array(
+  // option if it is not provided by the comedycentral provider.
+  $form['comedycentral']['player_options']['emvideo_comedycentral_full_screen'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow fullscreen'),
-    '#default_value' => variable_get('emvideo_example_full_screen', 1),
+    '#default_value' => variable_get('emvideo_comedycentral_full_screen', 1),
     '#description' => t('Allow users to view video using the entire computer screen.'),
   );
 
@@ -119,36 +94,9 @@ function emvideo_example_settings() {
  *    array. Otherwise, the calling function will handle testing the embed code
  *    against each regex string in the returned array.
  */
-function emvideo_example_extract($parse = '') {
-  // Here we assume that a URL will be passed in the form of
-  // http://www.example.com/video/text-video-title
-  // or embed code in the form of <object value="http://www.example.com/embed...".
-
-  // We'll simply return an array of regular expressions for Embedded Media
-  // Field to handle for us.
+function emvideo_comedycentral_extract($embed = '') {
   return array(
-    // In this expression, we're looking first for text matching the expression
-    // between the @ signs. The 'i' at the end means we don't care about the
-    // case. Thus, if someone enters http://www.Example.com, it will still
-    // match. We escape periods as \., as otherwise they match any character.
-    // The text in parentheses () will be returned as the provider video code,
-    // if there's a match for the entire expression. In this particular case,
-    // ([^?]+) means to match one more more characters (+) that are not a
-    // question mark ([^\?]), which would denote a query in the URL.
-    '@example\.com/video/([^\?]+)@i',
-
-    // Now we test for embedded video code, which is similar in this case to
-    // the above expression, except that we can safely assume we won't have a
-    // query in the URL, and that the URL will be surrounded by quotation marks,
-    // and have /embed/ rather than /video/ in the URL. Note that regular
-    // expressions will be tested for matches in the order provided, so you
-    // may need to move this value above the other in some cases. Obviously,
-    // in the case of this example provider, you could easily improve the
-    // regular expression to match against either a URL or embed code with
-    // one expression, such as '@example\.com/[watch|embed]/([^"\?]+)@i'.
-    // However, many other providers have more complex requirements, so
-    // we split them up for this demonstration.
-    '@example\.com/embed/([^"]+)=@i',
+    '@media\.mtvnservices\.com/([^"|\']+)@i',
   );
 }
 
@@ -158,9 +106,9 @@ function emvideo_example_extract($parse = '') {
  *  Provides an array to be serialised and made available with $item elsewhere.
  *
  *  This data can be used to store any extraneous information available
- *  specifically to the example provider.
+ *  specifically to the comedycentral provider.
  */
-function emvideo_example_data($field, $item) {
+function emvideo_comedycentral_data($field, $item) {
   // Initialize the data array.
   $data = array();
 
@@ -168,17 +116,31 @@ function emvideo_example_data($field, $item) {
   // down the road, we can respect older content. If allowed by Embedded Media
   // Field, any older content will automatically update this array as needed.
   // In any case, you should account for the version if you increment it.
-  $data['emvideo_example_version'] = EMVIDEO_EXAMPLE_DATA_VERSION;
+  $data['emvideo_comedycentral_version'] = EMVIDEO_COMEDYCENTRAL_DATA_VERSION;
 
   // We are using oEmbed to retrieve a standard set of data from the provider.
-  // You should change the URL as specified by the example provider.
-  // If the example provider does not support oEmbed, you must remove this
+  // You should change the URL as specified by the comedycentral provider.
+  // If the comedycentral provider does not support oEmbed, you must remove this
   // section entirely, or rewrite it to use their API.
   // See http://oembed.com/ for for information.
-  $xml = emfield_request_xml('example', 'http://www.example.com/api/oembed.xml?url=http%3A//www.example.com/video/'. $item['value'], array(), TRUE, FALSE, $item['value']);
 
-  // This stores a URL to the video's thumbnail.
-  $data['thumbnail'] = $xml['OEMBED']['THUMBNAIL_URL'][0];
+  //@TODO add variable to use either the emfield_request_xml or direct, simplexml
+  //$xml = simplexml_load_file('http://media.mtvnservices.com/player/config.jhtml?uri='. $item['value']);
+  $response = drupal_http_request('http://media.mtvnservices.com/player/config.jhtml?uri='. $item['value'],
+    array('X-Forwarded-For' => '12.13.14.15') // this is a hack to work from the UK
+  );
+
+  if ($response->code == 200) {
+    $xml = simplexml_load_string($response->data);
+
+    $item = $xml->player->feed->rss->channel->item;
+    // <media:group>
+    $media = $item->children('http://search.yahoo.com/mrss/');
+
+    $data['thumbnail'] = (string) $media->group->thumbnail->attributes()->url;
+
+  }
+
   return $data;
 }
 
@@ -187,7 +149,7 @@ function emvideo_example_data($field, $item) {
  *
  *  This attaches a file to an RSS feed.
  */
-function emvideo_example_rss($item, $teaser = NULL) {
+function emvideo_comedycentral_rss($item, $teaser = NULL) {
   if ($item['value']) {
     $file['thumbnail']['filepath'] = $item['data']['thumbnail'];
 
@@ -203,26 +165,26 @@ function emvideo_example_rss($item, $teaser = NULL) {
  *  @return
  *    A string containing the URL to view the video at the original provider's site.
  */
-function emvideo_example_embedded_link($video_code) {
-  return 'http://www.example.com/video/'. $video_code;
+function emvideo_comedycentral_embedded_link($video_code) {
+  return 'http://www.comedycentral.com/video/'. $video_code;
 }
 
 /**
- * The embedded flash displaying the example video.
+ * The embedded flash displaying the comedycentral video.
  */
-function theme_emvideo_example_flash($item, $width, $height, $autoplay) {
+function theme_emvideo_comedycentral_flash($item, $width, $height, $autoplay) {
   $output = '';
   if ($item['embed']) {
     $autoplay = $autoplay ? 'true' : 'false';
-    $fullscreen = variable_get('emvideo_example_full_screen', 1) ? 'true' : 'false';
+    $fullscreen = variable_get('emvideo_comedycentral_full_screen', 1) ? 'true' : 'false';
     $output = '<object width="'. $width .'" height="'. $height .'">';
-    $output .= '<param name="movie" value="http://www.example.com/embed/'. $item['data']['embed'] .'">';
+    $output .= '<param name="movie" value="http://www.comedycentral.com/embed/'. $item['data']['embed'] .'">';
     $output .= '<param name="quality" value="best" />';
     $output .= '<param name="wmode" value="transparent" />';
     $output .= '<param name="allowFullScreen" value="'. $fullscreen .'" />';
     $output .= '<param name="scale" value="showAll" />';
     $output .= '<param name="FlashVars" value="autoplay='. $autoplay .'" />';
-    $output .= '<embed src="http://www.example.com/embed/'. $item['data']['embed'] .'" type="application/x-shockwave-flash" allowFullScreen="'. $fullscreen .'"  width="'. $width .'" height="'. $height .'"></embed>';
+    $output .= '<embed src="http://www.comedycentral.com/embed/'. $item['data']['embed'] .'" type="application/x-shockwave-flash" allowFullScreen="'. $fullscreen .'"  width="'. $width .'" height="'. $height .'"></embed>';
     $output .= '</object>';
   }
   return $output;
@@ -238,7 +200,7 @@ function theme_emvideo_example_flash($item, $width, $height, $autoplay) {
  *  @return
  *    A URL pointing to the thumbnail.
  */
-function emvideo_example_thumbnail($field, $item, $formatter, $node, $width, $height) {
+function emvideo_comedycentral_thumbnail($field, $item, $formatter, $node, $width, $height) {
   // In this demonstration, we previously retrieved a thumbnail using oEmbed
   // during the data hook.
   return $data['thumbnail'];
@@ -261,8 +223,8 @@ function emvideo_example_thumbnail($field, $item, $formatter, $node, $width, $he
  *  @return
  *    The html of the embedded video.
  */
-function emvideo_example_video($embed, $width, $height, $field, $item, $node, $autoplay) {
-  $output = theme('emvideo_example_flash', $item, $width, $height, $autoplay);
+function emvideo_comedycentral_video($embed, $width, $height, $field, $item, $node, $autoplay) {
+  $output = theme('emvideo_comedycentral_flash', $item, $width, $height, $autoplay);
   return $output;
 }
 
@@ -284,8 +246,8 @@ function emvideo_example_video($embed, $width, $height, $field, $item, $node, $a
  *  @return
  *    The html of the embedded video.
  */
-function emvideo_example_preview($embed, $width, $height, $field, $item, $node, $autoplay) {
-  $output = theme('emvideo_example_flash', $item, $width, $height, $autoplay);
+function emvideo_comedycentral_preview($embed, $width, $height, $field, $item, $node, $autoplay) {
+  $output = theme('emvideo_comedycentral_flash', $item, $width, $height, $autoplay);
   return $output;
 }
 
@@ -293,15 +255,15 @@ function emvideo_example_preview($embed, $width, $height, $field, $item, $node, 
  *  Implementation of hook_emfield_subtheme.
  *  This returns any theme functions defined by this provider.
  */
-function emvideo_example_emfield_subtheme() {
+function emvideo_comedycentral_emfield_subtheme() {
     $themes = array(
-        'emvideo_example_flash'  => array(
+        'emvideo_comedycentral_flash'  => array(
             'arguments' => array('item' => NULL, 'width' => NULL, 'height' => NULL, 'autoplay' => NULL),
-            'file' => 'providers/example.inc',
+            'file' => 'providers/comedycentral.inc',
             // If you don't provide a 'path' value, then it will default to
-            // the emvideo.module path. Obviously, replace 'emexample' with
+            // the emvideo.module path. Obviously, replace 'emcomedycentral' with
             // the actual name of your custom module.
-            'path' => drupal_get_path('module', 'emexample'),
+            'path' => drupal_get_path('module', 'emcomedycentral'),
         )
     );
     return $themes;
