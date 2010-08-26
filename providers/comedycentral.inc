@@ -4,9 +4,9 @@
 /**
  * @file
  *  This is Ccomedy Central provider include file for Embedded Media Video.
+ *
  */
 
-define('EMVIDEO_COMEDYCENTRAL_MAIN_URL', 'http://www.comedycentral.com/');
 define('EMVIDEO_COMEDYCENTRAL_DATA_VERSION', 1);
 
 /**
@@ -54,17 +54,14 @@ function emvideo_comedycentral_info() {
  *  add the elements to that form array element.
  */
 function emvideo_comedycentral_settings() {
-  // We'll add a field set of player options here. You may add other options
-  // to this element, or remove the field set entirely if there are no
-  // user-configurable options allowed by the comedycentral provider.
+
   $form['comedycentral']['player_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Embedded video player options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  // This is an option to set the video to full screen. You should remove this
-  // option if it is not provided by the comedycentral provider.
+
   $form['comedycentral']['player_options']['emvideo_comedycentral_full_screen'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow fullscreen'),
@@ -112,19 +109,10 @@ function emvideo_comedycentral_data($field, $item) {
   // Initialize the data array.
   $data = array();
 
-  // Create some version control. Thus if we make changes to the data array
-  // down the road, we can respect older content. If allowed by Embedded Media
-  // Field, any older content will automatically update this array as needed.
-  // In any case, you should account for the version if you increment it.
+  // the emvideo pseudo version ontrol
   $data['emvideo_comedycentral_version'] = EMVIDEO_COMEDYCENTRAL_DATA_VERSION;
 
-  // We are using oEmbed to retrieve a standard set of data from the provider.
-  // You should change the URL as specified by the comedycentral provider.
-  // If the comedycentral provider does not support oEmbed, you must remove this
-  // section entirely, or rewrite it to use their API.
-  // See http://oembed.com/ for for information.
-
-  //@TODO add variable to use either the emfield_request_xml or direct, simplexml
+  // TODO add variable to use either the emfield_request_xml or direct, simplexml
   //$xml = simplexml_load_file('http://media.mtvnservices.com/player/config.jhtml?uri='. $item['value']);
   $response = drupal_http_request('http://media.mtvnservices.com/player/config.jhtml?uri='. $item['value'],
     array('X-Forwarded-For' => '12.13.14.15') // this is a hack to work from the UK
@@ -138,10 +126,25 @@ function emvideo_comedycentral_data($field, $item) {
     $media = $item->children('http://search.yahoo.com/mrss/');
 
     $data['thumbnail'] = (string) $media->group->thumbnail->attributes()->url;
+    $data['link'] = (string) $item->link;
 
   }
 
   return $data;
+}
+
+/**
+ * hook emvideo_PROVIDER_thumbnail
+ * Returns the external url for a thumbnail of a specific video.
+ *  @param $field
+ *    The field of the requesting node.
+ *  @param $item
+ *    The actual content of the field from the requesting node.
+ *  @return
+ *    A URL pointing to the thumbnail.
+ */
+function emvideo_comedycentral_thumbnail($field, $item, $formatter, $node, $width, $height) {
+  return $item['data']['thumbnail'];
 }
 
 /**
@@ -158,18 +161,6 @@ function emvideo_comedycentral_rss($item, $teaser = NULL) {
 }
 
 /**
- * hook emvideo_PROVIDER_embedded_link($video_code)
- * returns a link to view the video at the provider's site.
- *  @param $video_code
- *    The string containing the video to watch.
- *  @return
- *    A string containing the URL to view the video at the original provider's site.
- */
-function emvideo_comedycentral_embedded_link($video_code) {
-  return 'http://www.comedycentral.com/video/'. $video_code;
-}
-
-/**
  * The embedded flash displaying the comedycentral video.
  */
 function theme_emvideo_comedycentral_flash($item, $width, $height, $autoplay) {
@@ -178,26 +169,13 @@ function theme_emvideo_comedycentral_flash($item, $width, $height, $autoplay) {
   if ($item['embed']) {
     $autoplay = $autoplay ? 'true' : 'false';
     $fullscreen = variable_get('emvideo_comedycentral_full_screen', 1) ? 'true' : 'false';
+
 $output = <<<EOD
-<embed src='http://media.mtvnservices.com/{$item['value']}' width='$width' height='$height' allowFullscreen='$fullscreen' flashvars='autoPlay=$autoplay' type='application/x-shockwave-flash' wmode='transparent' allowscriptaccess='always' allownetworking='all'></embed>
+<embed src="http://media.mtvnservices.com/{$item['value']}" width="$width" height="$height" allowFullscreen="$fullscreen" flashvars="autoPlay=$autoplay" type="application/x-shockwave-flash" wmode="transparent" allowscriptaccess="always" allownetworking="all"></embed>
 EOD;
 
   }
   return $output;
-}
-
-/**
- * hook emvideo_PROVIDER_thumbnail
- * Returns the external url for a thumbnail of a specific video.
- *  @param $field
- *    The field of the requesting node.
- *  @param $item
- *    The actual content of the field from the requesting node.
- *  @return
- *    A URL pointing to the thumbnail.
- */
-function emvideo_comedycentral_thumbnail($field, $item, $formatter, $node, $width, $height) {
-  return $item['data']['thumbnail'];
 }
 
 /**
